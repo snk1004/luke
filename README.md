@@ -1,4 +1,5 @@
 # luke
+![avatar](/thumbnail)
 Small toys made by lfquan
 > 启动
 
