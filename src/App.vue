@@ -1,17 +1,13 @@
 <template>
   <div id="app">
-    <HomePage msg="Welcome to luke"/>
+    <!-- <HomePage msg="Welcome to luke"/> -->
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import HomePage from './views/Home'
-
 export default {
-  name: 'app',
-  components: {
-    HomePage
-  }
+  name: 'app'
 }
 </script>
 

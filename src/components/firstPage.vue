@@ -1,111 +1,108 @@
 <template>
-  <div class="wrap">
-    <header>
-      <div class="head_left">
-        <img class="logo" src="../assets/images/mylogo.png" alt />
-        <span>路可</span>
+  <div id="FirstPage">
+    <Reactive/>
+    <div class="content_left">
+      <div class="banner">
+        <el-carousel :interval="6000" type="card" :autoplay="true">
+          <el-carousel-item v-for="item in bannerList" :key="item.id">
+            <img :src="item.imgsrc " alt="" style="width: 100%;height: 100%;object-fit: cover;">
+          </el-carousel-item>
+        </el-carousel>
       </div>
-      <div class="head_right">
-        <div class="menu_list">
-          <el-menu
-            :default-active="activeIndex"
-            class="el-menu-demo"
-            mode="horizontal"
-            @select="handleSelect"
-          >
-            <el-menu-item index="1">首页</el-menu-item>
-            <el-submenu index="2">
-              <template slot="title">分类</template>
-              <el-submenu index="2-1">
-                <template slot="title">蛋龟</template>
-                <el-menu-item index="2-1-1">麝香属</el-menu-item>
-                <el-menu-item index="2-1-2">泥龟属</el-menu-item>
-              </el-submenu>
-              <el-menu-item index="2-2">草花喉</el-menu-item>
-              <el-submenu index="2-3">
-                <template slot="title">鳄龟</template>
-                <el-menu-item index="2-4-1">真鳄龟</el-menu-item>
-                <el-menu-item index="2-4-2">拟鳄龟</el-menu-item>
-              </el-submenu>
-              <el-menu-item index="2-4">巴西脸</el-menu-item>
-              <!-- <el-submenu index="2-5">
-                <template slot="title">其他</template>
-                <el-menu-item index="2-4-1">选项1</el-menu-item>
-                <el-menu-item index="2-4-2">选项2</el-menu-item>
-                <el-menu-item index="2-4-3">选项3</el-menu-item>
-              </el-submenu> -->
-            </el-submenu>
-            <el-menu-item index="3" disabled>开发中...</el-menu-item>
-            <!-- <el-menu-item index="4">
-              <a href="https://www.ele.me" target="_blank"></a>
-            </el-menu-item>-->
-          </el-menu>
-        </div>
-      </div>
-    </header>
-    <section>
-      <div class="content_left">
-        <div class="banner">
-          <el-carousel :interval="6000" type="card" height="300px" :autoplay="true">
-            <el-carousel-item v-for="item in bannerList" :key="item.id">
-              <img :src="item.imgsrc " alt="" style="width: 100%;height: 100%;object-fit: cover;">
-            </el-carousel-item>
-          </el-carousel>
-        </div>
-        <div class="container">
-          <div class="list_box">
-            <div class="list" v-for="item in 5" :key="item">
-              <div class="list_top">
-                <div class="list_left">
-                  <p>前言 vue构建的项目中，vuex的状态存储是响应式的，当vue组件从store中读取状态的时候，若store中的状态发生变化</p>
-                </div>
-                <div class="list_right">
-                  <img src="../assets/images/mylogo.jpg" alt="">
-                </div>
+      <div class="container">
+        <div class="list_box">
+          <div class="list" v-for="item in contentList" :key="item.id">
+            <div class="list_top" @click="toDetail(item)">
+              <div class="list_left">
+                <p>{{item.context}}</p>
               </div>
-              <div class="list_mess">
-                <li><i class="icon-user icon"></i><span>一条小咸鱼</span></li>
-                <li><i class="icon-favo icon"></i><span>3</span></li>
-                <li><i class="icon-talk icon"></i><span>23</span></li>
+              <div class="list_right">
+                <img :src="item.imgurl?require('../assets/images/imglist/'+item.imgurl):defaulturl" alt="">
               </div>
+            </div>
+            <div class="list_mess">
+              <li><i class="icon-user icon"></i><span>{{item.writer}}</span></li>
+              <li><i class="icon-favo icon"></i><span>{{item.favorite}}</span></li>
+              <li><i class="icon-talk icon"></i><span>{{item.comment}}</span></li>
             </div>
           </div>
         </div>
       </div>
-      <div class="content_right">
-        <div class="the_date">
-          <el-calendar v-model="value"></el-calendar>
-        </div>
+    </div>
+    <div class="content_right">
+      <div class="the_date">
+        <el-calendar v-model="value"></el-calendar>
       </div>
-    </section>
-    <footer>
-      <span class="version">版本号：1.0.0</span>
-    </footer>
-    <el-backtop></el-backtop>
+    </div>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+import Reactive from '../components/reactive';
 export default {
   data() {
     return {
-      activeIndex: "1",
       value: new Date(),
-      bannerList: [{imgsrc:require("../assets/images/banner/banner2.jpg"),id:"001"},{imgsrc:require("../assets/images/banner/banner3.jpg"),id:"002"},{imgsrc:require("../assets/images/banner/banner4.jpg"),id:"003"}]
+      bannerList: [{imgsrc:require("../assets/images/banner/banner2.jpg"),id:"001"},{imgsrc:require("../assets/images/banner/banner3.jpg"),id:"002"},{imgsrc:require("../assets/images/banner/banner4.jpg"),id:"003"}],
+      contentList: [],
+      defaulturl: require('../assets/images/mylogo.jpg'),
+      requireUrl: []
     };
   },
+  components: {
+    Reactive
+  },
+  created() {
+    this.getRenData();
+  },
   methods: {
-    handleSelect(key, keyPath) {
-      console.log(key, keyPath);
+    getRenData(){
+      axios.get('/api/dataList').then(res=>{
+        for(var i=0;i<res.data.data.length;i++){
+          this.requireUrl.push(res.data.data[i].imgurl);
+        }
+        this.contentList = res.data.data;
+      }).catch(error=>{
+        console.log(error);
+      });
     },
+    toDetail(data){
+      this.$router.push('/detail')
+    }
   },
 };
 </script>
 
 <style lang="less">
+@media screen and (max-width: 600px) {
+  section{
+    padding-top: 60px!important;
+  }
+  #FirstPage{
+    display: block!important;
+    .content_left{
+      width: 100%;
+      margin-right: 0px;
+      .banner .el-carousel__item--card.is-active {
+        width: 350px;
+      }
+      .el-carousel__container{
+        height: 200px;
+      }
+      .list_box{
+        padding: 5px!important;
+      }
+    }
+  }
+}
 .wrap {
   width: 100%;
   background: #eee;
+  #FirstPage{
+    display: flex;
+    width: 960px;
+  }
   header {
     width: 100%;
     min-width: 960px;
@@ -193,9 +190,16 @@ export default {
               justify-content: space-between;
               box-sizing: border-box;
               .list_left{
+                width: 100%;  
                 p{
                   font-size: 14px;
                   text-align: left;
+                  text-indent:2em;
+                  display: -webkit-box;
+                  -webkit-box-orient: vertical;
+                  -webkit-line-clamp: 3;
+                  overflow: hidden;
+                  line-height: 22px;
                 }
               }
               .list_right{
@@ -244,6 +248,9 @@ export default {
                 background: url('../assets/images/icon/talk.svg')no-repeat;
               }
             }
+          }
+          .list:last-child{
+            border-bottom: 0;
           }
         }
       }

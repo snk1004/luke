@@ -1,6 +1,18 @@
 /* eslint-disable camelcase */
 // vue.config.js
 // eslint-disable-next-line no-unused-vars
+
+// dev
+const express = require('express')
+const app = express()
+var dataList = require('./src/assets/json/data.json')
+var seller = dataList.seller
+var goods = dataList.goods
+var ratings = dataList.ratings
+var apiRoutes = express.Router()
+
+app.use('/api', apiRoutes)
+
 const path = require('path')
 // eslint-disable-next-line no-unused-vars
 const debug = process.env.NODE_ENV !== 'production'
@@ -41,6 +53,7 @@ switch (process.argv[4]) {
 var definePlugin = new webpack.DefinePlugin({
   API_ROOT: JSON.stringify(api_root)
 })
+
 module.exports = {
   publicPath: baseURI, // 根域上下文目录，原baseURI
   outputDir: env, // 构建输出目录
@@ -77,6 +90,10 @@ module.exports = {
     //         changOrigin: true
     //     }
     // },
-    before: app => {}
+    before(app){
+      app.get('/api/dataList',(req,res,next)=>{
+        res.json({code: 0,data: dataList,msg:'success!'});
+      })
+    },
   }
 }
